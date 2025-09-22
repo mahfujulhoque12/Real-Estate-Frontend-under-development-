@@ -1,3 +1,25 @@
 @import "tailwindcss";
+body {
+  font-family: var(--font-poppins), sans-serif;
+}
 
+@theme {
+  /* Navbar / Header */
+  --color-nav: #ddf4e7; /* Nav background / light mint */
 
+  /* Primary / Gradient Start */
+  --color-primary: #4fd3c4; /* Primary brand color / teal */
+
+  /* Secondary / Highlights */
+  --color-primary-dark: #0f766e; /* Dark teal for buttons / hover states */
+  --color-secondary: #1e3a8a; /* Dark blue / call-to-action / premium */
+  --color-accent: #fbbf24; /* Accent gold / highlights / buttons */
+
+  /* Text / Typography */
+  --color-dark: #1e293b; /* Main text / headings */
+  --color-gray: #64748b; /* Secondary text / subtext */
+  --color-light: #f1f5f9; /* Light gray text on dark background */
+
+  /* Backgrounds / Cards */
+  --color-card: #f1f5f9; /* Section background / card background */
+}
