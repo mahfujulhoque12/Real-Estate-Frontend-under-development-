@@ -1,0 +1,120 @@
+"use client";
+
+import React, { useState } from "react";
+import { FcGoogle } from "react-icons/fc";
+import { FaUserAlt, FaLock } from "react-icons/fa";
+import { MdEmail } from "react-icons/md";
+
+const Signup: React.FC = () => {
+  const [formData, setFormData] = useState({
+    userName: "",
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Signup Data:", formData);
+  };
+
+  const handleGoogleSignup = () => {
+    console.log("Signup with Google");
+  };
+
+  return (
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 p-4">
+      <div className="w-full max-w-md bg-white shadow-2xl rounded-2xl p-8">
+        {/* Heading */}
+        <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">
+          Create an Account
+        </h2>
+
+        {/* Signup Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Username */}
+          <div className="relative">
+            <FaUserAlt className="absolute left-3 top-3.5 text-gray-400 text-lg" />
+            <input
+              type="text"
+              name="userName"
+              value={formData.userName}
+              onChange={handleChange}
+              placeholder="Username"
+              required
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+
+          {/* Email */}
+          <div className="relative">
+            <MdEmail className="absolute left-3 top-3.5 text-gray-400 text-xl" />
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email Address"
+              required
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+
+          {/* Password */}
+          <div className="relative">
+            <FaLock className="absolute left-3 top-3.5 text-gray-400 text-lg" />
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
+              required
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+
+          {/* Signup Button */}
+          <button
+            type="submit"
+            className="w-full bg-primary text-white py-2 rounded-lg font-semibold hover:bg-primary-dark duration-500 hover:shadow-md transition cursor-pointer"
+          >
+            Sign Up
+          </button>
+        </form>
+
+        {/* Divider */}
+        <div className="flex items-center my-6">
+          <hr className="flex-grow border-gray-300" />
+          <span className="mx-2 text-gray-500 text-sm">OR</span>
+          <hr className="flex-grow border-gray-300" />
+        </div>
+
+        {/* Google Signup */}
+        <button
+          onClick={handleGoogleSignup}
+          className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-lg py-2 hover:bg-gray-50 transition duration-200"
+        >
+          <FcGoogle className="text-2xl" />
+          <span className="font-medium text-gray-700">Sign up with Google</span>
+        </button>
+
+        {/* Redirect to Sign in */}
+        <p className="text-center text-gray-600 text-sm mt-6">
+          Already have an account?{" "}
+          <a
+            href="/sign-in"
+            className="text-indigo-600 font-medium hover:underline"
+          >
+            Sign in
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default Signup;

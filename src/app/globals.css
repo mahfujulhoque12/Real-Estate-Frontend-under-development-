@@ -2,7 +2,6 @@
 body {
   font-family: var(--font-poppins), sans-serif;
 }
-
 @theme {
   /* Navbar / Header */
   --color-nav: #ddf4e7; /* Nav background / light mint */
