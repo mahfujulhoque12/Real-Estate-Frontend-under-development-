@@ -1,24 +1,61 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaUserAlt, FaLock } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
+import axios from "axios";
+import { BASE_URL } from "@/constant/Constant";
+import { useRouter } from "next/navigation";
+
+interface SignupForm {
+  userName: string;
+  email: string;
+  password: string;
+}
 
 const Signup: React.FC = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SignupForm>({
     userName: "",
     email: "",
     password: "",
   });
 
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Signup Data:", formData);
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const res = await axios.post(`${BASE_URL}/api/signup`, formData);
+      setMessage({ type: "success", text: "Account created successfully!" });
+      console.log("Signup successful:", res.data);
+
+      // Reset form
+      setFormData({ userName: "", email: "", password: "" });
+      router.push("/sign-in");
+    } catch (error: any) {
+      console.error("Signup failed:", error);
+      setMessage({
+        type: "error",
+        text:
+          error.response?.data?.message || "Signup failed. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignup = () => {
@@ -32,6 +69,19 @@ const Signup: React.FC = () => {
         <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">
           Create an Account
         </h2>
+
+        {/* Message */}
+        {message && (
+          <div
+            className={`text-center mb-4 py-2 rounded-md ${
+              message.type === "success"
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
 
         {/* Signup Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -80,9 +130,14 @@ const Signup: React.FC = () => {
           {/* Signup Button */}
           <button
             type="submit"
-            className="w-full bg-primary text-white py-2 rounded-lg font-semibold hover:bg-primary-dark duration-500 hover:shadow-md transition cursor-pointer"
+            disabled={loading}
+            className={`w-full text-white py-2 rounded-lg font-semibold duration-500 hover:shadow-md transition cursor-pointer ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
           >
-            Sign Up
+            {loading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
 
