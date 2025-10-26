@@ -58,7 +58,7 @@ const Navbar = () => {
         <Link href="/about" className={linkStyle}>
           <FaInfoCircle /> <span>About</span>
         </Link>
-        <Link href="/profile" className={linkMobileStyle}>
+        <Link href="/sign-up" className={linkMobileStyle}>
           {user.image ? (
             <Image
               src={user.image}
@@ -102,7 +102,7 @@ const Navbar = () => {
         <Link href="/about" className={linkMobileStyle}>
           <FaInfoCircle /> About
         </Link>
-        <Link href="/profile" className={linkMobileStyle}>
+        <Link href="/sign-up" className={linkMobileStyle}>
           {user.image ? (
             <Image
               src={user.image}

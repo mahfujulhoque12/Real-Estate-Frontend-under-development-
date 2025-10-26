@@ -131,7 +131,7 @@ const Signup: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full text-white py-2 rounded-lg font-semibold duration-500 hover:shadow-md transition cursor-pointer ${
+            className={`"w-full bg-primary text-white py-2 rounded-lg font-semibold hover:bg-primary-dark w-full duration-500 hover:shadow-md transition cursor-pointer ${
               loading
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-indigo-600 hover:bg-indigo-700"

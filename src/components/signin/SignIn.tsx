@@ -4,6 +4,9 @@ import React, { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaLock } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { BASE_URL } from "@/constant/Constant";
 
 const SignIn: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -11,13 +14,38 @@ const SignIn: React.FC = () => {
     password: "",
   });
 
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState<{
+      type: "success" | "error";
+      text: string;
+    } | null>(null);
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit =async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Signin Data:", formData);
+      setLoading(true);
+    setMessage(null);
+  try {
+    const res = await axios.post(`${BASE_URL}/api/signin`, formData,{withCredentials:true})
+      setMessage({ type: "success", text: "Account created successfully!" });
+      console.log("Signup successful:", res.data);
+
+      // Reset form
+      setFormData({ email: "", password: "" });
+      router.push("/");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error:any) {
+        console.error("Signup failed:", error);
+      setMessage({
+        type: "error",
+        text:
+          error.response?.data?.message || "Signup failed. Please try again.",
+      });
+  }
   };
 
   const handleGoogleSignin = () => {
@@ -63,11 +91,16 @@ const SignIn: React.FC = () => {
           </div>
 
           {/* Signin Button */}
-          <button
+           <button
             type="submit"
-            className="w-full bg-primary text-white py-2 rounded-lg font-semibold hover:bg-primary-dark duration-500 hover:shadow-md transition cursor-pointer"
+            disabled={loading}
+            className={`"w-full bg-primary text-white py-2 rounded-lg font-semibold hover:bg-primary-dark w-full duration-500 hover:shadow-md transition cursor-pointer ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
           >
-            Sign In
+            {loading ? "loadin..." : "Sign In"}
           </button>
         </form>
 
