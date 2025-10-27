@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
@@ -7,6 +8,8 @@ import { MdEmail } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { BASE_URL } from "@/constant/Constant";
+import { useDispatch } from "react-redux";
+import { signinFailure, signinStart, signinSuccess } from "@/app/redux/feature/userSlice";
 
 const SignIn: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -20,33 +23,44 @@ const SignIn: React.FC = () => {
       type: "success" | "error";
       text: string;
     } | null>(null);
+  const dispatch = useDispatch()
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit =async (e: React.FormEvent) => {
-    e.preventDefault();
-      setLoading(true);
-    setMessage(null);
-  try {
-    const res = await axios.post(`${BASE_URL}/api/signin`, formData,{withCredentials:true})
-      setMessage({ type: "success", text: "Account created successfully!" });
-      console.log("Signup successful:", res.data);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  dispatch(signinStart());
+  setMessage(null);
+  setLoading(true);
 
-      // Reset form
-      setFormData({ email: "", password: "" });
-      router.push("/");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error:any) {
-        console.error("Signup failed:", error);
-      setMessage({
-        type: "error",
-        text:
-          error.response?.data?.message || "Signup failed. Please try again.",
-      });
+  try {
+    const res = await axios.post(`${BASE_URL}/api/signin`, formData, {
+      withCredentials: true,
+    });
+
+    // Dispatch success
+    dispatch(signinSuccess(res.data.user)); // ✅ use response user data
+
+    setMessage({ type: "success", text: "Signed in successfully!" });
+    console.log("Signin successful:", res.data);
+
+    // Reset form
+    setFormData({ email: "", password: "" });
+
+    router.push("/");
+  } catch (error: any) {
+    console.error("Signin failed:", error);
+    const errorMsg =
+      error.response?.data?.message || "Signin failed. Please try again.";
+    dispatch(signinFailure(errorMsg));
+    setMessage({ type: "error", text: errorMsg });
+  } finally {
+    setLoading(false);
   }
-  };
+};
+
 
   const handleGoogleSignin = () => {
     console.log("Signin with Google");
@@ -59,6 +73,17 @@ const SignIn: React.FC = () => {
         <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">
           Welcome Back
         </h2>
+        {message && (
+          <div
+            className={`mb-4 text-center p-2 rounded-lg ${
+              message.type === "success"
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
 
         {/* Signin Form */}
         <form onSubmit={handleSubmit} className="space-y-5">

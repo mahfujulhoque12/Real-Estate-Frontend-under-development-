@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar/Navbar";
+import ReduxProvider from "./ReduxProvider";
 
 // Load Poppins font
 const poppins = Poppins({
@@ -23,8 +24,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.variable} antialiased bg-gray-100/80`}>
+        <ReduxProvider>
+          
         <Navbar />
         {children}
+  </ReduxProvider>
+
+   
       </body>
     </html>
   );
