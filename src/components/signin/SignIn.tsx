@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { FcGoogle } from "react-icons/fc";
 import { FaLock } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import { useRouter } from "next/navigation";
@@ -10,6 +9,7 @@ import axios from "axios";
 import { BASE_URL } from "@/constant/Constant";
 import { useDispatch } from "react-redux";
 import { signinFailure, signinStart, signinSuccess } from "@/app/redux/feature/userSlice";
+import Google from "../google/Google";
 
 const SignIn: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -41,7 +41,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     });
 
     // Dispatch success
-    dispatch(signinSuccess(res.data.user)); // ✅ use response user data
+    dispatch(signinSuccess(res.data)); // ✅ use response user data
 
     setMessage({ type: "success", text: "Signed in successfully!" });
     console.log("Signin successful:", res.data);
@@ -62,9 +62,6 @@ const handleSubmit = async (e: React.FormEvent) => {
 };
 
 
-  const handleGoogleSignin = () => {
-    console.log("Signin with Google");
-  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 p-4">
@@ -137,13 +134,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         </div>
 
         {/* Google Signin */}
-        <button
-          onClick={handleGoogleSignin}
-          className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-lg py-2 hover:bg-gray-50 transition duration-200"
-        >
-          <FcGoogle className="text-2xl" />
-          <span className="font-medium text-gray-700">Sign in with Google</span>
-        </button>
+    <Google/>
 
         {/* Redirect to Signup */}
         <p className="text-center text-gray-600 text-sm mt-6">

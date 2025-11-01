@@ -3,12 +3,12 @@
 
 
 import React, { useState } from "react";
-import { FcGoogle } from "react-icons/fc";
 import { FaUserAlt, FaLock } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import axios from "axios";
 import { BASE_URL } from "@/constant/Constant";
 import { useRouter } from "next/navigation";
+import Google from "../google/Google";
 
 interface SignupForm {
   userName: string;
@@ -59,9 +59,6 @@ const Signup: React.FC = () => {
     }
   };
 
-  const handleGoogleSignup = () => {
-    console.log("Signup with Google");
-  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 p-4">
@@ -150,13 +147,7 @@ const Signup: React.FC = () => {
         </div>
 
         {/* Google Signup */}
-        <button
-          onClick={handleGoogleSignup}
-          className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-lg py-2 hover:bg-gray-50 transition duration-200"
-        >
-          <FcGoogle className="text-2xl" />
-          <span className="font-medium text-gray-700">Sign up with Google</span>
-        </button>
+   <Google/> 
 
         {/* Redirect to Sign in */}
         <p className="text-center text-gray-600 text-sm mt-6">
