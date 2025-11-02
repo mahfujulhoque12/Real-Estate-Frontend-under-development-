@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar/Navbar";
 import ReduxProvider from "./ReduxProvider";
+import { Toaster } from "sonner";
 
 // Load Poppins font
 const poppins = Poppins({
@@ -27,7 +28,8 @@ export default function RootLayout({
         <ReduxProvider>
           
         <Navbar />
-        {children}
+          {children}
+          <Toaster position="top-center" richColors /> 
   </ReduxProvider>
 
    

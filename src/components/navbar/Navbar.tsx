@@ -12,19 +12,12 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 import { linkMobileStyle, linkStyle } from "../common/CustomClass";
-import { cn } from "@/lib/utils";
-
-interface User {
-  name: string;
-  image?: string; // optional user image URL
-}
-
-const user: User = {
-  name: "Mahfujul",
-  image: "/user.webp",
-};
+import { useSelector } from "react-redux";
+import { RootState } from "@/app/redux/store"; 
 
 const Navbar = () => {
+ 
+  const { currentUser } = useSelector((state: RootState) => state.user);
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -58,19 +51,31 @@ const Navbar = () => {
         <Link href="/about" className={linkStyle}>
           <FaInfoCircle /> <span>About</span>
         </Link>
-        <Link href="/sign-up" className={linkMobileStyle}>
-          {user.image ? (
-            <Image
-              src={user.image}
-              alt={user.name}
-              width={32}
-              height={32}
-              className="rounded-full object-cover border border-primary-dark h-[28px] w-[28px]"
-            />
-          ) : (
-            <FaUserCircle className="text-[var(--color-text-dark)]" size={32} />
-          )}
-        </Link>
+
+        {/* ✅ Show logged-in user OR signup link */}
+        {currentUser ? (
+          <div className="flex items-center gap-2">
+            <Link href={'/profile'}>
+            
+            {currentUser.image ? (
+              <Image
+                src={currentUser.image}
+                alt={currentUser.name || "User"}
+                width={32}
+                height={32}
+                className="rounded-full object-cover border border-primary-dark h-[28px] w-[28px]"
+              />
+            ) : (
+              <FaUserCircle className="text-[var(--color-text-dark)]" size={28} />
+            )}
+            </Link>
+            <span className="font-medium text-sm">{currentUser.name}</span>
+          </div>
+        ) : (
+          <Link href="/sign-up" className={linkStyle}>
+            <FaUserCircle size={18} /> <span>Sign Up</span>
+          </Link>
+        )}
       </div>
 
       {/* Mobile Menu Button */}
@@ -102,19 +107,32 @@ const Navbar = () => {
         <Link href="/about" className={linkMobileStyle}>
           <FaInfoCircle /> About
         </Link>
-        <Link href="/sign-up" className={linkMobileStyle}>
-          {user.image ? (
-            <Image
-              src={user.image}
-              alt={user.name}
-              width={32}
-              height={32}
-              className="rounded-full object-cover"
-            />
-          ) : (
-            <FaUserCircle className="text-[var(--color-text-dark)]" size={32} />
-          )}
-        </Link>
+
+        {/* ✅ Mobile user section */}
+        {currentUser ? (
+          
+           <div className="flex items-center gap-2">
+            <Link href={'/profile'}>
+            
+            {currentUser.image ? (
+              <Image
+                src={currentUser.image}
+                alt={currentUser.name || "User"}
+                width={32}
+                height={32}
+                className="rounded-full object-cover border border-primary-dark h-[28px] w-[28px]"
+              />
+            ) : (
+              <FaUserCircle className="text-[var(--color-text-dark)]" size={28} />
+            )}
+            </Link>
+            <span className="font-medium text-sm">{currentUser.name}</span>
+          </div>
+        ) : (
+          <Link href="/sign-up" className={linkMobileStyle}>
+            <FaUserCircle /> Sign Up
+          </Link>
+        )}
       </div>
     </nav>
   );
