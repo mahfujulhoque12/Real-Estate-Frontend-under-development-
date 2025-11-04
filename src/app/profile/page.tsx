@@ -11,6 +11,7 @@ import { FaUserCircle } from "react-icons/fa";
 import { toast } from "sonner";
 import axios from "axios";
 import { BASE_URL } from "@/constant/Constant";
+import Link from "next/link";
 
 const ProfilePage = () => {
   const { currentUser } = useSelector((state: RootState) => state.user);
@@ -42,18 +43,33 @@ const ProfilePage = () => {
 
   const handleDelete = async () => {
     if (!currentUser?._id) return;
-    if (confirm("Are you sure you want to delete your account?")) {
-      try {
-        await axios.delete(`${BASE_URL}/api/user/${currentUser._id}`, {
-          withCredentials: true,
-        });
-        dispatch(signout());
-        toast.error("Account deleted successfully!");
-      } catch (err) {
-        console.log(err, "error");
-        toast.error("Failed to delete account!");
-      }
-    }
+
+    // ✅ Create a custom confirmation toast
+    toast.warning("Are you sure you want to delete your account?", {
+      description: "This action cannot be undone.",
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          try {
+            await axios.delete(`${BASE_URL}/api/user/${currentUser._id}`, {
+              withCredentials: true,
+            });
+            dispatch(signout());
+            toast.success("Account deleted successfully!");
+          } catch (err) {
+            console.log(err, "error");
+            toast.error("Failed to delete account!");
+          }
+        },
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => {
+          toast.info("Account deletion cancelled");
+        },
+      },
+      duration: 10000, // 10 seconds to decide
+    });
   };
 
   const handleSave = async () => {
@@ -222,6 +238,13 @@ const ProfilePage = () => {
                 >
                   Logout
                 </button>
+
+                <Link
+                  href={"/listing"}
+                  className="bg-white/20 flex justify-center hover:bg-white/30 text-white py-2 rounded-lg font-semibold transition-all duration-300"
+                >
+                  Create Listing
+                </Link>
 
                 <button
                   onClick={handleDelete}

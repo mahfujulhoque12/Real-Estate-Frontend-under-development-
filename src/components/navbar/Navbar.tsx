@@ -13,10 +13,9 @@ import {
 } from "react-icons/fa";
 import { linkMobileStyle, linkStyle } from "../common/CustomClass";
 import { useSelector } from "react-redux";
-import { RootState } from "@/app/redux/store"; 
+import { RootState } from "@/app/redux/store";
 
 const Navbar = () => {
- 
   const { currentUser } = useSelector((state: RootState) => state.user);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -55,19 +54,21 @@ const Navbar = () => {
         {/* ✅ Show logged-in user OR signup link */}
         {currentUser ? (
           <div className="flex items-center gap-2">
-            <Link href={'/profile'}>
-            
-            {currentUser.image ? (
-              <Image
-                src={currentUser.image}
-                alt={currentUser.name || "User"}
-                width={32}
-                height={32}
-                className="rounded-full object-cover border border-primary-dark h-[28px] w-[28px]"
-              />
-            ) : (
-              <FaUserCircle className="text-[var(--color-text-dark)]" size={28} />
-            )}
+            <Link href={"/profile"}>
+              {currentUser.image ? (
+                <Image
+                  src={currentUser.image}
+                  alt={currentUser.name || "User"}
+                  width={32}
+                  height={32}
+                  className="rounded-full object-cover border border-primary-dark h-[28px] w-[28px]"
+                />
+              ) : (
+                <FaUserCircle
+                  className="text-[var(--color-text-dark)]"
+                  size={28}
+                />
+              )}
             </Link>
             <span className="font-medium text-sm">{currentUser.name}</span>
           </div>
@@ -110,21 +111,22 @@ const Navbar = () => {
 
         {/* ✅ Mobile user section */}
         {currentUser ? (
-          
-           <div className="flex items-center gap-2">
-            <Link href={'/profile'}>
-            
-            {currentUser.image ? (
-              <Image
-                src={currentUser.image}
-                alt={currentUser.name || "User"}
-                width={32}
-                height={32}
-                className="rounded-full object-cover border border-primary-dark h-[28px] w-[28px]"
-              />
-            ) : (
-              <FaUserCircle className="text-[var(--color-text-dark)]" size={28} />
-            )}
+          <div className="flex items-center gap-2">
+            <Link href={"/profile"}>
+              {currentUser.image ? (
+                <Image
+                  src={currentUser.image}
+                  alt={currentUser.name || "User"}
+                  width={32}
+                  height={32}
+                  className="rounded-full object-cover border border-primary-dark h-[28px] w-[28px]"
+                />
+              ) : (
+                <FaUserCircle
+                  className="text-[var(--color-text-dark)]"
+                  size={28}
+                />
+              )}
             </Link>
             <span className="font-medium text-sm">{currentUser.name}</span>
           </div>
