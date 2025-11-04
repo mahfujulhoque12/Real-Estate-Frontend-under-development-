@@ -1,14 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import PrivateRoute from "@/components/private-route/PrivateRoute";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
-import { signout } from "@/app/redux/feature/userSlice";
+import { signout, updateUserSuccess } from "@/app/redux/feature/userSlice"; // ✅ Import updateUserSuccess
 import { useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { toast } from "sonner";
 import axios from "axios";
+import { BASE_URL } from "@/constant/Constant";
 
 const ProfilePage = () => {
   const { currentUser } = useSelector((state: RootState) => state.user);
@@ -18,22 +20,18 @@ const ProfilePage = () => {
   const [formData, setFormData] = useState({
     userName: currentUser?.userName || "",
     email: currentUser?.email || "",
-    image: currentUser?.image || "",
+    password: "",
   });
-  const [preview, setPreview] = useState(formData.image);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState(currentUser?.image || "");
   const [loading, setLoading] = useState(false);
 
-  // 🖼️ handle local image upload and preview
+  // 🖼️ Local preview for image
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const localPreview = URL.createObjectURL(file);
-      setPreview(localPreview);
-      // If you plan to upload to server, you can do it here:
-      // const form = new FormData();
-      // form.append("file", file);
-      // const res = await axios.post("/api/upload", form);
-      // setFormData({ ...formData, image: res.data.url });
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setPreview(URL.createObjectURL(selectedFile));
     }
   };
 
@@ -43,25 +41,51 @@ const ProfilePage = () => {
   };
 
   const handleDelete = async () => {
+    if (!currentUser?._id) return;
     if (confirm("Are you sure you want to delete your account?")) {
       try {
-        // await axios.delete(`${BASE_URL}/api/users/${currentUser._id}`);
+        await axios.delete(`${BASE_URL}/api/user/${currentUser._id}`, {
+          withCredentials: true,
+        });
         dispatch(signout());
         toast.error("Account deleted successfully!");
       } catch (err) {
-        toast.error("Failed to delete account");
+        console.log(err, "error");
+        toast.error("Failed to delete account!");
       }
     }
   };
 
   const handleSave = async () => {
+    if (!currentUser?._id) return;
+
     setLoading(true);
     try {
-      // await axios.put(`${BASE_URL}/api/users/${currentUser._id}`, formData);
+      const form = new FormData();
+      form.append("userName", formData.userName);
+      form.append("email", formData.email);
+      if (formData.password) form.append("password", formData.password);
+      if (file) form.append("image", file);
+
+      const res = await axios.put(
+        `${BASE_URL}/api/user/${currentUser._id}`,
+        form,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        }
+      );
+
+      // ✅ Update Redux store with the new user data
+      dispatch(updateUserSuccess(res.data.user));
+
       toast.success("Profile updated successfully!");
       setEditing(false);
-    } catch (err) {
-      toast.error("Update failed. Try again!");
+      setFile(null);
+      setFormData({ ...formData, password: "" });
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to update profile. Try again!");
     } finally {
       setLoading(false);
     }
@@ -78,9 +102,10 @@ const ProfilePage = () => {
           {/* Profile Image */}
           <div className="flex justify-center mb-6 relative">
             <div className="relative group">
-              {preview ? (
+              {/* ✅ Always use currentUser.image as primary source, fallback to preview during editing */}
+              {currentUser?.image || preview ? (
                 <Image
-                  src={preview}
+                  src={preview || currentUser?.image || ""}
                   alt={formData.userName || "User"}
                   width={120}
                   height={120}
@@ -105,9 +130,17 @@ const ProfilePage = () => {
 
           {/* Editable Fields */}
           {editing ? (
-            <div className="space-y-5 text-left animate-fadeIn">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSave();
+              }}
+              className="space-y-5 text-left animate-fadeIn"
+            >
               <div>
-                <label className="text-sm font-semibold text-white">Username</label>
+                <label className="text-sm font-semibold text-white">
+                  Username
+                </label>
                 <input
                   type="text"
                   name="userName"
@@ -118,7 +151,9 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-white">Email</label>
+                <label className="text-sm font-semibold text-white">
+                  Email
+                </label>
                 <input
                   type="email"
                   name="email"
@@ -127,59 +162,76 @@ const ProfilePage = () => {
                   className="w-full bg-white/20 border border-white/30 rounded-lg p-2 mt-1 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400"
                 />
               </div>
-            </div>
-          ) : (
-            <>
-              <h1 className="text-3xl font-bold text-white mb-1 tracking-wide drop-shadow">
-                {formData.userName || "User"}
-              </h1>
-              <p className="text-white/80 text-sm mb-6">
-                {formData.email || "No email available"}
-              </p>
-            </>
-          )}
 
-          {/* Buttons */}
-          <div className="flex flex-col space-y-3 mt-6">
-            {editing ? (
-              <>
+              <div>
+                <label className="text-sm font-semibold text-white">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter new password"
+                  className="w-full bg-white/20 border border-white/30 rounded-lg p-2 mt-1 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                />
+              </div>
+
+              <div className="flex flex-col space-y-3 mt-6">
                 <button
-                  onClick={handleSave}
+                  type="submit"
                   disabled={loading}
                   className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-purple-500 hover:to-pink-500 text-white py-2 rounded-lg font-semibold transition-all duration-300 disabled:opacity-70"
                 >
                   {loading ? "Saving..." : "Save Changes"}
                 </button>
+
                 <button
-                  onClick={() => setEditing(false)}
+                  type="button"
+                  onClick={() => {
+                    setEditing(false);
+                    setPreview(currentUser?.image || ""); // ✅ Reset preview to current image
+                    setFile(null);
+                  }}
                   className="bg-white/20 hover:bg-white/30 text-white py-2 rounded-lg font-semibold transition-all duration-300"
                 >
                   Cancel
                 </button>
-              </>
-            ) : (
-              <button
-                onClick={() => setEditing(true)}
-                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-purple-500 hover:to-pink-500 text-white py-2 rounded-lg font-semibold transition-all duration-300"
-              >
-                Edit Profile
-              </button>
-            )}
+              </div>
+            </form>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold text-white mb-1 tracking-wide drop-shadow">
+                {currentUser?.userName || "User"}
+              </h1>
+              <p className="text-white/80 text-sm mb-6">
+                {currentUser?.email || "No email available"}
+              </p>
 
-            <button
-              onClick={handleLogout}
-              className="bg-white/20 hover:bg-white/30 text-white py-2 rounded-lg font-semibold transition-all duration-300"
-            >
-              Logout
-            </button>
+              <div className="flex flex-col space-y-3 mt-6">
+                <button
+                  onClick={() => setEditing(true)}
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-purple-500 hover:to-pink-500 text-white py-2 rounded-lg font-semibold transition-all duration-300"
+                >
+                  Edit Profile
+                </button>
 
-            <button
-              onClick={handleDelete}
-              className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-pink-600 hover:to-red-500 text-white py-2 rounded-lg font-semibold transition-all duration-300"
-            >
-              Delete Account
-            </button>
-          </div>
+                <button
+                  onClick={handleLogout}
+                  className="bg-white/20 hover:bg-white/30 text-white py-2 rounded-lg font-semibold transition-all duration-300"
+                >
+                  Logout
+                </button>
+
+                <button
+                  onClick={handleDelete}
+                  className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-pink-600 hover:to-red-500 text-white py-2 rounded-lg font-semibold transition-all duration-300"
+                >
+                  Delete Account
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </PrivateRoute>
