@@ -1,6 +1,6 @@
 "use client";
 import { Listing } from "@/respons-type/response.type";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import {
@@ -17,6 +17,8 @@ import Input from "../common/Input";
 import Textarea from "../common/Textarea";
 import Select from "../common/Select";
 import Checkbox from "../common/Checkbox";
+import { useSelector } from "react-redux";
+import { RootState } from "@/app/redux/store";
 
 interface CreateListingFormProps {
   onSubmit: (
@@ -36,6 +38,7 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
   const [imageUrls, setImageUrls] = useState<string[]>(
     initialData?.imageUrls || []
   );
+  const currentUser = useSelector((state: RootState) => state.user.currentUser);
 
   const {
     register,
@@ -57,11 +60,17 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
       parking: initialData?.parking || false,
       type: initialData?.type || "rent",
       offer: initialData?.offer || false,
-      uerRef: initialData?.uerRef || "",
+      userRef: initialData?.userRef || "",
     },
   });
 
   const watchOffer = watch("offer");
+
+  useEffect(() => {
+    if (currentUser?._id) {
+      setValue("userRef", currentUser._id);
+    }
+  }, [currentUser, setValue]);
 
   const onFormSubmit = (data: FormData) => {
     const submitData = {
@@ -249,7 +258,7 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
         />
 
         {/* User Reference (Hidden) */}
-        <input type="hidden" {...register("uerRef")} />
+        <input type="hidden" {...register("userRef")} />
 
         {/* Submit Button */}
         <div className="flex justify-end">
@@ -258,7 +267,11 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
             disabled={loading}
             className="px-6 py-3 bg-primary text-white font-medium rounded-md cursor-pointer hover:bg-primary-dark focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? "Creating Listing..." : "Create Listing"}
+            {loading
+              ? "Saving..."
+              : initialData
+              ? "Update Listing"
+              : "Create Listing"}
           </button>
         </div>
       </form>

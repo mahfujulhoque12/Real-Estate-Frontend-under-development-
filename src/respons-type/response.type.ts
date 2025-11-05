@@ -12,7 +12,7 @@ export interface Listing {
   type: "rent" | "sale";
   offer: boolean;
   imageUrls: string[];
-  uerRef: string;
+  userRef: string;
   createdAt?: string;
   updatedAt?: string;
 }
