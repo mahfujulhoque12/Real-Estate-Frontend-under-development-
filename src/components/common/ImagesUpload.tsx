@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { FaTrash, FaUpload } from "react-icons/fa";
 
+type ImageType = File | string; // Can be a File object (new upload) or string URL (existing image)
+
 interface ImagesUploadProps {
-  images: string[];
-  onImagesChange: (images: string[]) => void;
+  images: ImageType[]; // File[] | string[]
+  onImagesChange: (images: ImageType[]) => void;
   maxImages?: number;
   required?: boolean;
   error?: string;
@@ -21,56 +24,62 @@ const ImagesUpload: React.FC<ImagesUploadProps> = ({
   label = "Upload Images",
   previewLabel = "Image Previews",
 }) => {
-  const [internalImages, setInternalImages] = useState<string[]>(images);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+
+  // Initialize previewUrls whenever images change
+  useEffect(() => {
+    const urls = images.map((img) =>
+      typeof img === "string" ? img : URL.createObjectURL(img)
+    );
+    setPreviewUrls(urls);
+
+    // Cleanup old URLs when component unmounts or images change
+    return () => {
+      urls.forEach((url, i) => {
+        if (typeof images[i] !== "string") URL.revokeObjectURL(url);
+      });
+    };
+  }, [images]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    const newImages: string[] = [];
-    const remainingSlots = maxImages - internalImages.length;
+    const fileArray = Array.from(files);
+    const remainingSlots = maxImages - images.length;
 
-    if (files.length > remainingSlots) {
+    if (fileArray.length > remainingSlots) {
       alert(
         `You can only upload up to ${maxImages} images. ${remainingSlots} slots remaining.`
       );
       return;
     }
 
-    const uploadPromises: Promise<string>[] = [];
-
-    for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
-      const file = files[i];
-
-      const uploadPromise = new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          resolve(result);
-        };
-        reader.readAsDataURL(file);
-      });
-
-      uploadPromises.push(uploadPromise);
-    }
-
-    Promise.all(uploadPromises).then((uploadedImages) => {
-      const updatedImages = [...internalImages, ...uploadedImages];
-      setInternalImages(updatedImages);
-      onImagesChange(updatedImages);
-    });
-  };
-
-  const removeImage = (index: number) => {
-    const updatedImages = internalImages.filter((_, i) => i !== index);
-    setInternalImages(updatedImages);
+    const filesToAdd = fileArray.slice(0, remainingSlots);
+    const updatedImages = [...images, ...filesToAdd];
     onImagesChange(updatedImages);
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
+  const removeImage = (index: number) => {
+    const updatedImages = images.filter((_, i) => i !== index);
+
+    // Revoke preview URL if it's a File object
+    if (typeof images[index] !== "string") {
+      URL.revokeObjectURL(previewUrls[index]);
+    }
+
+    onImagesChange(updatedImages);
   };
 
+  const clearAllImages = () => {
+    images.forEach((img, i) => {
+      if (typeof img !== "string") URL.revokeObjectURL(previewUrls[i]);
+    });
+    onImagesChange([]);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) =>
+    e.preventDefault();
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const files = e.dataTransfer.files;
@@ -82,23 +91,16 @@ const ImagesUpload: React.FC<ImagesUploadProps> = ({
     }
   };
 
-  const clearAllImages = () => {
-    setInternalImages([]);
-    onImagesChange([]);
-  };
-
   return (
     <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Images</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">{label}</h2>
 
       <div className="space-y-4">
         {/* Upload Area */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium text-gray-700">
-              {label} {required && "*"}
-            </label>
-            {internalImages.length > 0 && (
+            {required && <span className="text-red-500">*</span>}
+            {images.length > 0 && (
               <button
                 type="button"
                 onClick={clearAllImages}
@@ -136,8 +138,9 @@ const ImagesUpload: React.FC<ImagesUploadProps> = ({
               multiple
               accept="image/*"
               onChange={handleImageUpload}
+              name="imageUrls[]"
               className="hidden"
-              disabled={internalImages.length >= maxImages}
+              disabled={images.length >= maxImages}
             />
             <p className="text-xs text-gray-500 mt-2">
               PNG, JPG, GIF up to 10MB each
@@ -148,47 +151,55 @@ const ImagesUpload: React.FC<ImagesUploadProps> = ({
         </div>
 
         {/* Image Preview */}
-        {internalImages.length > 0 && (
+        {images.length > 0 && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {previewLabel} ({internalImages.length} images)
+              {previewLabel} ({images.length} images)
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {internalImages.map((url, index) => (
-                <div key={index} className="relative group">
-                  <div className="aspect-square overflow-hidden rounded-md border border-gray-200">
-                    <Image
-                      height={200}
-                      width={200}
-                      src={url}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+              {images.map((img, index) => {
+                const src = typeof img === "string" ? img : previewUrls[index];
+                if (!src) return null;
+
+                return (
+                  <div key={index} className="relative group">
+                    <div className="aspect-square overflow-hidden rounded-md border border-gray-200">
+                      <Image
+                        height={200}
+                        width={200}
+                        src={src}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeImage(index);
+                      }}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                    >
+                      <FaTrash className="w-3 h-3" />
+                    </button>
+
+                    {/* Show file name only for File objects */}
+                    {typeof img !== "string" && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center">
+                        {img.name}
+                      </div>
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeImage(index);
-                    }}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
-                  >
-                    <FaTrash className="w-3 h-3" />
-                  </button>
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    Image {index + 1}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* Image Count */}
         {maxImages && (
           <div className="text-sm text-gray-500">
-            {internalImages.length} of {maxImages} images uploaded
-            {internalImages.length >= maxImages && (
+            {images.length} of {maxImages} images uploaded
+            {images.length >= maxImages && (
               <span className="text-red-500 ml-2">Maximum reached</span>
             )}
           </div>

@@ -1,43 +1,60 @@
-"use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Listing from "@/components/listing/Listing";
-import PrivateRoute from "@/components/private-route/PrivateRoute";
+"use client";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import { BASE_URL } from "@/constant/Constant";
 import axios from "axios";
-import React from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import PrivateRoute from "@/components/private-route/PrivateRoute";
+import { useRouter } from "next/navigation";
+import { RootState } from "../redux/store";
+import { clearEdit } from "../redux/feature/listingEditSlice";
+import CreateListingForm from "@/components/listing/Listing";
 
 const Page = () => {
+  const dispatch = useDispatch();
   const router = useRouter();
 
-  const handleSubmit = async (listingData: any) => {
+  const { editId, editData } = useSelector(
+    (state: RootState) => state.listingEdit
+  );
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (formData: any) => {
     try {
-      console.log("Submitting listing data:", listingData);
+      setLoading(true);
 
-      const response = await axios.post(
-        `${BASE_URL}/api/listing/create`,
-        listingData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.status === 201) {
-        toast.success("Listing created successfully!");
-        // router.push("/listings");
+      if (editId) {
+        await axios.put(`${BASE_URL}/api/listing/update/${editId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        });
+        toast.success("Listing updated!");
+      } else {
+        await axios.post(`${BASE_URL}/api/listing/create`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        });
+        toast.success("Listing created!");
       }
-    } catch (error: any) {
-      console.error("Error creating listing:", error);
-      toast.error(error.response?.data?.message || "Failed to create listing");
+
+      dispatch(clearEdit()); // clear Redux edit state
+      router.push("/show-listing"); // go to show-listing page
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Operation failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <PrivateRoute>
-      <Listing onSubmit={handleSubmit} />
+      <CreateListingForm
+        onSubmit={handleSubmit}
+        loading={loading}
+        initialData={editData || null}
+      />
     </PrivateRoute>
   );
 };

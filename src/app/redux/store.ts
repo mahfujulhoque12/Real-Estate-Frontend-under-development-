@@ -2,9 +2,10 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import userReducer from "@/app/redux/feature/userSlice";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // ✅ correct spelling
-
+import listingEditReducer from "@/app/redux/feature/listingEditSlice";
 const rootReducer = combineReducers({
   user: userReducer,
+  listingEdit: listingEditReducer,
 });
 
 const persistConfig = {

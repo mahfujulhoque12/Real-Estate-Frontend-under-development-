@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Listing } from "@/respons-type/response.type";
 import React, { useEffect, useState } from "react";
@@ -25,7 +26,7 @@ interface CreateListingFormProps {
     listingData: Omit<Listing, "_id" | "createdAt" | "updatedAt">
   ) => void;
   loading?: boolean;
-  initialData?: Partial<Listing>;
+  initialData?: Partial<Listing> | null;
 }
 
 type FormData = Omit<Listing, "_id" | "createdAt" | "updatedAt">;
@@ -35,9 +36,10 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
   loading = false,
   initialData,
 }) => {
-  const [imageUrls, setImageUrls] = useState<string[]>(
-    initialData?.imageUrls || []
-  );
+  type ImageType = File | string;
+
+  const [imageFiles, setImageFiles] = useState<ImageType[]>([]);
+
   const currentUser = useSelector((state: RootState) => state.user.currentUser);
 
   const {
@@ -72,10 +74,17 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
     }
   }, [currentUser, setValue]);
 
+  useEffect(() => {
+    if (initialData?.imageUrls && Array.isArray(initialData.imageUrls)) {
+      // Convert existing URLs for display, not File objects
+      setImageFiles(initialData.imageUrls as any);
+    }
+  }, [initialData]);
+
   const onFormSubmit = (data: FormData) => {
     const submitData = {
       ...data,
-      imageUrls: imageUrls,
+      imageUrls: imageFiles,
     };
     onSubmit(submitData);
   };
@@ -250,13 +259,12 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
 
         {/* Images */}
         <ImagesUpload
-          images={imageUrls}
-          onImagesChange={(images) => setImageUrls(images)}
+          images={imageFiles} // Pass File array
+          onImagesChange={(images) => setImageFiles(images)} // Update File array
           maxImages={10}
           required={true}
           error={errors.imageUrls?.message}
         />
-
         {/* User Reference (Hidden) */}
         <input type="hidden" {...register("userRef")} />
 

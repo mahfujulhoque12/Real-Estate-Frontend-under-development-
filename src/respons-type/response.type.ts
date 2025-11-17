@@ -11,7 +11,7 @@ export interface Listing {
   parking: boolean;
   type: "rent" | "sale";
   offer: boolean;
-  imageUrls: string[];
+  imageUrls: (File | string)[];
   userRef: string;
   createdAt?: string;
   updatedAt?: string;

@@ -12,11 +12,13 @@ import { toast } from "sonner";
 import axios from "axios";
 import { BASE_URL } from "@/constant/Constant";
 import Link from "next/link";
+import { clearEdit } from "../redux/feature/listingEditSlice";
+import { useRouter } from "next/navigation";
 
 const ProfilePage = () => {
   const { currentUser } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
-
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
     userName: currentUser?.userName || "",
@@ -34,6 +36,11 @@ const ProfilePage = () => {
       setFile(selectedFile);
       setPreview(URL.createObjectURL(selectedFile));
     }
+  };
+
+  const handleCreateNew = () => {
+    dispatch(clearEdit()); // clear editId & editData
+    router.push("/listing"); // go to listing page with empty form
   };
 
   const handleLogout = () => {
@@ -239,11 +246,18 @@ const ProfilePage = () => {
                   Logout
                 </button>
 
-                <Link
-                  href={"/listing"}
+                <button
+                  onClick={handleCreateNew}
                   className="bg-white/20 flex justify-center hover:bg-white/30 text-white py-2 rounded-lg font-semibold transition-all duration-300"
                 >
                   Create Listing
+                </button>
+
+                <Link
+                  href={"/show-listing"}
+                  className="bg-white/20 flex justify-center hover:bg-white/30 text-white py-2 rounded-lg font-semibold transition-all duration-300"
+                >
+                  Show Listing
                 </Link>
 
                 <button

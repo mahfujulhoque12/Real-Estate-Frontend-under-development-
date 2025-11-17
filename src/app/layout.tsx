@@ -26,13 +26,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.variable} antialiased bg-gray-100/80`}>
         <ReduxProvider>
-          
-        <Navbar />
+          <Navbar />
           {children}
-          <Toaster position="top-center" richColors /> 
-  </ReduxProvider>
-
-   
+          <Toaster position="top-right" richColors />
+        </ReduxProvider>
       </body>
     </html>
   );
