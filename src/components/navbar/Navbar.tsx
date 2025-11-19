@@ -12,7 +12,7 @@ import {
   FaInfoCircle,
   FaPhone,
 } from "react-icons/fa";
-import { linkMobileStyle, linkStyle } from "../common/CustomClass";
+import { linkStyle } from "../common/CustomClass";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
 
@@ -28,7 +28,7 @@ const Navbar = () => {
     <nav className="bg-gradient-to-r from-[#68d8ca] to-[#c5eee1] text-white shadow-lg px-4 py-4 flex items-center justify-between relative">
       {/* Left Section - Logo */}
       <div className="flex items-center gap-3">
-        <div className="bg-white rounded-xl p-2 shadow-lg">
+        <Link href={"/"}>
           <Image
             src="/logo.png"
             alt="Logo"
@@ -36,7 +36,7 @@ const Navbar = () => {
             height={140}
             className="object-contain"
           />
-        </div>
+        </Link>
       </div>
 
       {/* Center Section - Navigation Links */}
