@@ -22,6 +22,7 @@ interface RecentOfferProps {
 
 const RecentOffer: React.FC<RecentOfferProps> = ({ listings }) => {
   // Always show exactly 8 items - fill with placeholders if needed
+  console.log(listings, "recent offer listing");
   const displayListings = [...listings];
   while (displayListings.length < 8) {
     displayListings.push({} as Listing);

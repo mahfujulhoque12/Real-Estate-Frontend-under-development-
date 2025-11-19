@@ -33,6 +33,7 @@ interface ForRentProps {
 
 const ForRent: React.FC<ForRentProps> = ({ listings }) => {
   // Always show exactly 8 items - fill with placeholders if needed
+  console.log(listings, "rent lising");
   const displayListings = [...listings];
   while (displayListings.length < 8) {
     displayListings.push({} as Listing);

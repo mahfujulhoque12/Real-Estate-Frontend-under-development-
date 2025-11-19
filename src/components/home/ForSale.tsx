@@ -34,6 +34,7 @@ interface ForSaleProps {
 
 const ForSale: React.FC<ForSaleProps> = ({ listings }) => {
   // Always show exactly 8 items - fill with placeholders if needed
+  console.log(listings, "sale lising");
   const displayListings = [...listings];
   while (displayListings.length < 8) {
     displayListings.push({} as Listing);
