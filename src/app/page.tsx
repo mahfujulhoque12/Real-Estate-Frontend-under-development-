@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import ForRent from "@/components/home/ForRent";
 import ForSale from "@/components/home/ForSale";
 import Hero from "@/components/home/Hero";
@@ -20,56 +23,45 @@ interface Listing {
   imageUrls: string[];
 }
 
-const getRecentOffers = async (): Promise<Listing[]> => {
-  try {
-    const res = await api.get("/api/listing");
+export default function Page() {
+  const [recentOffers, setRecentOffers] = useState<Listing[]>([]);
+  const [rentListings, setRentListings] = useState<Listing[]>([]);
+  const [saleListings, setSaleListings] = useState<Listing[]>([]);
 
-    const allListings: Listing[] = res.data;
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const res = await api.get("/api/listing");
+        const allListings: Listing[] = res.data;
 
-    return allListings
-      .filter((listing) => listing.offer && listing.discountPrice)
-      .sort((a, b) => new Date(b._id).getTime() - new Date(a._id).getTime())
-      .slice(0, 8);
-  } catch (error) {
-    console.error("Recent offers fetch failed:", error);
-    return [];
-  }
-};
+        // Recent Offers
+        const recent = allListings
+          .filter((l) => l.offer && l.discountPrice)
+          .sort((a, b) => new Date(b._id).getTime() - new Date(a._id).getTime())
+          .slice(0, 8);
 
-const getRentListings = async (): Promise<Listing[]> => {
-  try {
-    const res = await api.get("/api/listing");
-    const allListings: Listing[] = res.data;
+        // Rent
+        const rent = allListings
+          .filter((l) => l.type.toLowerCase() === "rent")
+          .sort((a, b) => new Date(b._id).getTime() - new Date(a._id).getTime())
+          .slice(0, 8);
 
-    return allListings
-      .filter((listing) => listing.type.toLowerCase() === "rent")
-      .sort((a, b) => new Date(b._id).getTime() - new Date(a._id).getTime())
-      .slice(0, 8);
-  } catch (error) {
-    console.error("Rent listings fetch failed:", error);
-    return [];
-  }
-};
+        // Sale
+        const sale = allListings
+          .filter((l) => l.type.toLowerCase() === "sale")
+          .sort((a, b) => new Date(b._id).getTime() - new Date(a._id).getTime())
+          .slice(0, 8);
 
-const getSaleListings = async (): Promise<Listing[]> => {
-  try {
-    const res = await api.get("/api/listing");
-    const allListings: Listing[] = res.data;
+        setRecentOffers(recent);
+        setRentListings(rent);
+        setSaleListings(sale);
+      } catch (error) {
+        console.error("Error fetching listings:", error);
+      }
+    };
 
-    return allListings
-      .filter((listing) => listing.type.toLowerCase() === "sale")
-      .sort((a, b) => new Date(b._id).getTime() - new Date(a._id).getTime())
-      .slice(0, 8);
-  } catch (error) {
-    console.error("Sale listings fetch failed:", error);
-    return [];
-  }
-};
-
-const Page = async () => {
-  const recentOffers = await getRecentOffers();
-  const rentListings = await getRentListings();
-  const saleListings = await getSaleListings();
+    fetchListings();
+  }, []);
 
   return (
     <div>
@@ -79,6 +71,4 @@ const Page = async () => {
       <ForSale listings={saleListings} />
     </div>
   );
-};
-
-export default Page;
+}
