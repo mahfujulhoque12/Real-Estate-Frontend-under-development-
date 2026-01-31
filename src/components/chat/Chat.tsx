@@ -9,7 +9,6 @@ import React, {
 import { LuMessageCircleMore } from "react-icons/lu";
 import { IoClose } from "react-icons/io5";
 import { MdMessage, MdOutlineSupportAgent, MdSend } from "react-icons/md";
-import { BsThreeDots } from "react-icons/bs";
 
 type Message = {
   role: "user" | "ai";
