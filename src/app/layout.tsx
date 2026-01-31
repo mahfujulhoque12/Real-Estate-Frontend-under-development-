@@ -5,6 +5,7 @@ import Navbar from "@/components/navbar/Navbar";
 import ReduxProvider from "./ReduxProvider";
 import { Toaster } from "sonner";
 import Footer from "@/components/footer/Footer";
+import Chat from "@/components/chat/Chat";
 
 // Load Poppins font
 const poppins = Poppins({
@@ -30,6 +31,7 @@ export default function RootLayout({
           <Navbar />
           {children}
           <Footer />
+          <Chat />
           <Toaster position="top-right" richColors />
         </ReduxProvider>
       </body>
